@@ -3,15 +3,19 @@
 ## Introduction ##
 This repository contains an extension for [Continia Document Capture](http://continia.com/documentcapture-for-dynamics-nav.aspx) module, which is a solution for scanning of invoices and other documents directly from Microsoft Dynamics NAV! 
 
-The initial development was done by CKL Software GmbH (CKL) and the code will be maintained by CKL regularly based on experiences made in future projects.
+The initial development was done by [CKL Software GmbH (CKL)](https://www.ckl-kore.de "Jump to CKL Website") and the code will be maintained by CKL unregularly based on experiences made in projects. 
 
-At the moment there is no other documentation than this readme file. 
+**Please note!** 
+This is not an official module / add-on and therefor CKL Software does not offer support for implementation, training or is responsible for errors in this module. 
+You can use the CKL Advance Line Recognition on your own risk. 
 
-**Please report issues in the issues list.**
+**If you find issues in the code, please report these in the issues list here on Github.**
+
+## Documentation ##
+At the moment there is no other documentation than this readme file.
 
 ## Implementation of the extension ##
-Please note that the code is based on Microsoft Dynamics NAV 2016 RTM database and an installed version of Document Capture Version 4.50.01
-
+The code will be updated unregularly for new versions of Document Capture.
 
 1. Clone the project / Download all  *.txt files to your client
 2. Import all txt files into your database via the development environment 
