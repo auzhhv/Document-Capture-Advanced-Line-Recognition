@@ -2,8 +2,8 @@ OBJECT Codeunit 60001 Adv. Purch/Sales Line Capture
 {
   OBJECT-PROPERTIES
   {
-    Date=02/13/19;
-    Time=12:00:00 PM;
+    Date=02/12/19;
+    Time=[ 3:22:44 PM];
     Modified=Yes;
     Version List=ALR005;
   }
@@ -49,6 +49,7 @@ OBJECT Codeunit 60001 Adv. Purch/Sales Line Capture
                   "Advanced Line Recognition Type"::LinkedToAnchorField: FindValueFromOffsetField(TempDocLine,TemplateField);
                   "Advanced Line Recognition Type"::FindFieldByCaptionInPosition: FindValueByCaptionInPosition(TempDocLine,TemplateField);
                   "Advanced Line Recognition Type"::FindFieldByColumnHeading: FindFieldByColumnHeading(TempDocLine,TemplateField);
+                  "Advanced Line Recognition Type"::GroupValue: FindGroupValue(TempDocLine,TemplateField);
                 END;
               END;
           UNTIL TempSortedDocumentField.NEXT = 0;
@@ -266,6 +267,82 @@ OBJECT Codeunit 60001 Adv. Purch/Sales Line Capture
         DocumentValueNew."Line No." := TempDocLine."Line No.";
         DocumentValueNew.INSERT;
         DocumentValueBuffer.DELETE;
+      END;
+    END;
+
+    LOCAL PROCEDURE FindGroupValue@1113400006(VAR TempDocLine@1113400001 : TEMPORARY Record 6085596;VAR CurrField@1113400000 : Record 6085580) : Boolean;
+    VAR
+      Template@1113400003 : Record 6085579;
+      DocumentValue@1113400002 : Record 6085593;
+      DocumentValueCopy@1113400013 : Record 6085593;
+      lCurrPage@1113400012 : Record 6085591;
+      lFromTopPos@1113400007 : Integer;
+      lFromTopPage@1113400006 : Integer;
+      lToBottomPos@1113400005 : Integer;
+      lToBottomPage@1113400004 : Integer;
+      i@1113400008 : Integer;
+      NextPos@1113400011 : Integer;
+      CaptureEngine@1113400010 : Codeunit 6085575;
+      Word@1113400009 : Text[1024];
+    BEGIN
+      IF NOT Template.GET(TempDocLine."Template No.")THEN
+        EXIT;
+
+      // Delete old values
+      IF DocumentValue.GET(TempDocLine."Document No.",TRUE,CurrField.Code,TempDocLine."Line No.") THEN
+        DocumentValue.DELETE;
+
+      // PrÅfe ob zwischen TOP der aktuellen Zeile und Bottom der vorherigen Zeile eine Caption mit Werte gefunden werden kann
+      // Get Position of caption
+      GetRangeToPrevLine(TempDocLine,lFromTopPage,lFromTopPos,lToBottomPage,lToBottomPos);
+
+      FOR i := lFromTopPage TO lToBottomPage DO BEGIN
+        lCurrPage.GET(Document."No.",i);
+
+        IF i < lToBottomPage THEN
+          CaptureEngine.SetLineRegion(i,lFromTopPos,i,lCurrPage."Bottom Word Pos.")
+        ELSE
+          IF (i > lFromTopPage) AND (i < lToBottomPage) THEN
+            CaptureEngine.SetLineRegion(i,0,i,lCurrPage."Bottom Word Pos.")
+          ELSE
+            IF lFromTopPage = lToBottomPage THEN
+              CaptureEngine.SetLineRegion(i,lFromTopPos,i,lToBottomPos)
+            ELSE
+              CaptureEngine.SetLineRegion(i,0,i,lToBottomPos);
+
+
+        Word := CaptureEngine.CaptureField(Document,i,CurrField,FALSE);
+        IF Word <> '' THEN BEGIN
+          IF (DocumentValue.GET(Document."No.",TRUE,CurrField.Code,0)) THEN BEGIN
+            DocumentValueCopy := DocumentValue;
+            DocumentValueCopy."Line No." := TempDocLine."Line No.";
+            DocumentValueCopy.INSERT;
+            DocumentValue.DELETE;
+          END;
+          CaptureMgt.UpdateFieldValue(Document."No.",TempDocLine."Page No.",TempDocLine."Line No.",CurrField,Word,FALSE,FALSE);
+          EXIT(TRUE);
+        END;
+      END;
+
+      //Falls nicht, hole den Wert aus vorheriger Zeile
+      IF TempDocLine."Line No." > 0 THEN BEGIN
+        DocumentValue.SETCURRENTKEY("Document No.","Is Value",Type,"Line No.");
+        DocumentValue.SETRANGE("Document No.",Document."No.");
+        DocumentValue.SETRANGE("Is Value",TRUE);
+        DocumentValue.SETRANGE(Type,DocumentValue.Type::Line);
+        DocumentValue.SETRANGE("Line No.",TempDocLine."Line No." - 1);
+        DocumentValue.SETRANGE(Code,CurrField.Code);
+        IF DocumentValue.FINDSET THEN BEGIN
+          CaptureMgt.UpdateFieldValue(Document."No.",TempDocLine."Page No.",TempDocLine."Line No.",CurrField,DocumentValue."Value (Text)",FALSE,FALSE);
+          IF DocumentValueCopy.GET(TempDocLine."Document No.",TRUE,CurrField.Code,TempDocLine."Line No.") THEN BEGIN
+            DocumentValueCopy.Top := DocumentValue.Top;
+            DocumentValueCopy.Bottom := DocumentValue.Bottom;
+            DocumentValueCopy.Left := DocumentValue.Left;
+            DocumentValueCopy.Right := DocumentValue.Right;
+            DocumentValueCopy.MODIFY(TRUE);
+          END;
+          EXIT(TRUE);
+        END;
       END;
     END;
 

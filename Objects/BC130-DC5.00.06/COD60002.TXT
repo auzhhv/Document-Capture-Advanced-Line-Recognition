@@ -2,7 +2,7 @@ OBJECT Codeunit 60002 Adv. Purch. Doc. - Line Val.
 {
   OBJECT-PROPERTIES
   {
-    Date=02/13/19;
+    Date=02/12/19;
     Time=12:00:00 PM;
     Modified=Yes;
     Version List=ALR005;

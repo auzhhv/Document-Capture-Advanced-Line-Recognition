@@ -2,8 +2,8 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=02/13/19;
-    Time=12:00:00 PM;
+    Date=02/12/19;
+    Time=[ 3:55:00 PM];
     Modified=Yes;
     Version List=ALR005;
   }
@@ -175,6 +175,34 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
       IF SelectedField.MODIFY(TRUE) THEN BEGIN;
         SetTemplateToALRProcessing(TempDocumentLine."Template No.");
         MESSAGE(Text017,SelectedField."Field Name");
+      END ELSE
+        MESSAGE(Text014);
+    END;
+
+    PROCEDURE SetToGroupField@1113400006(VAR TempDocumentLine@1113400000 : Record 6085596);
+    VAR
+      SelectedField@1113400001 : Record 6085580;
+      TemplateFieldCaption@1113400002 : Record 6085581;
+    BEGIN
+      // Select field
+      MESSAGE(Text018);
+      IF NOT SelectField(SelectedField,TempDocumentLine."Template No.",'') THEN
+        ERROR(Text001);
+
+      // Check that the selected field has at least one caption
+      TemplateFieldCaption.SETRANGE("Template No.", SelectedField."Template No.");
+      TemplateFieldCaption.SETRANGE(Code, SelectedField.Code);
+      TemplateFieldCaption.SETRANGE(Type,TemplateFieldCaption.Type::Line);
+      IF TemplateFieldCaption.ISEMPTY THEN
+        ERROR(Text008, SelectedField.Code);
+
+      ResetField(SelectedField);
+
+      // Setup field for group field search
+      SelectedField."Advanced Line Recognition Type" := SelectedField."Advanced Line Recognition Type"::GroupValue;
+      IF SelectedField.MODIFY(TRUE) THEN BEGIN
+        SetTemplateToALRProcessing(TempDocumentLine."Template No.");
+        MESSAGE(Text019,SelectedField."Field Name");
       END ELSE
         MESSAGE(Text014);
     END;

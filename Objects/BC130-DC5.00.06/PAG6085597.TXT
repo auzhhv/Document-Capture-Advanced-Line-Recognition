@@ -2,8 +2,8 @@ OBJECT Page 6085597 Document Lines ListPart
 {
   OBJECT-PROPERTIES
   {
-    Date=02/13/19;
-    Time=12:00:00 PM;
+    Date=02/12/19;
+    Time=[ 3:08:18 PM];
     Modified=Yes;
     Version List=DCW17.00.00.5.00.05,ALR005;
   }
@@ -110,6 +110,17 @@ OBJECT Page 6085597 Document Lines ListPart
                                  AdvLineRecognitionMgt@1113400000 : Codeunit 60000;
                                BEGIN
                                  AdvLineRecognitionMgt.SetToFieldSearchWithCaption(Rec);
+                               END;
+                                }
+      { 3       ;2   ;Action    ;
+                      CaptionML=[DEU=Gruppierungsfeld mit Caption;
+                                 ENU=Grouped field with caption];
+                      Promoted=Yes;
+                      Image=NumberGroup;
+                      OnAction=VAR
+                                 AdvLineRecognitionMgt@1113400000 : Codeunit 60000;
+                               BEGIN
+                                 AdvLineRecognitionMgt.SetToGroupField(Rec);
                                END;
                                 }
     }
