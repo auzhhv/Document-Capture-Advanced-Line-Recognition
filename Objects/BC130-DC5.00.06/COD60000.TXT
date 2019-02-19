@@ -24,10 +24,8 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
       Text006@1000000005 : TextConst 'DEU=Codeunit %1 existiert nicht!;ENU=Codeunit %1 does not exist!';
       Text007@1113400000 : TextConst 'DEU=Es wurden %1 Felder fÅr die Verarbeitung von Captions in der Zeile eingerichtet.;ENU=%1 fields have been linked to the line identification field!';
       Text008@1113400001 : TextConst 'DEU=Fehler! FÅr Feld %1 wurde noch keine Caption hinterlegt! Bitte pflegen Sie die Caption zuerst.;ENU=Error! For the field %1 hasn|t been trained a caption! Please train the caption first.';
-      Text009@1113400002 : TextConst 'DEU=Das Feld "%1" ist als versetztes Feld mit öberschrift konfiguriert.;ENU=%1 fields have been linked to the line identification field!';
-      Text010@1113400003 : TextConst 'DEU=Das Feld "%1" ist nun als Ersatzfeld fÅr das Feld "%2" konfiguriert!;ENU=The field %1 is now configured as replacement field!';
+      Text009@1113400002 : TextConst 'DEU=Das Feld "%1" ist als versetztes Feld mit öberschrift konfiguriert.;ENU=The value for field "%1" will be searched by the column heading now.';
       Text011@1113400004 : TextConst 'DEU=Bitte wÑhlen Sie zuerst das Feld aus, fÅr welches Sie das Ersatzfeld einrichten mîchten.;ENU=Please choose the line identification field first!';
-      Text012@1113400005 : TextConst 'DEU=WÑhlen Sie nun das Ersatzfeld aus.;ENU=Choose the replacement field';
       Text013@1113400006 : TextConst 'DEU=WÑhlen Sie nun das Feld aus, welches Sie mit dem Ankerfeld verknÅpfen mîchten.;ENU=Choose the field, which should be linked with the line identifiying field.';
       Text014@1113400007 : TextConst 'DEU=Fehler bei Zuweisung.;ENU=Error during assigning the field';
       Text015@1113400008 : TextConst 'DEU=Bitte wÑhlen Sie das Feld aus, welches Åber die öberschrift gefunden werden soll.;ENU=Select the field that should be found by the column heading.';
@@ -274,26 +272,6 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
 
       IF NOT LineIdentFieldFound THEN
         ERROR(Text020);
-      {
-      PositionFieldDocumentValue.SETRANGE("Document No.",DocumentNo);
-      PositionFieldDocumentValue.SETRANGE("Is Value",TRUE);
-      PositionFieldDocumentValue.SETRANGE("Line No.",1);
-      PositionFieldDocumentValue.SETRANGE(Type,PositionFieldDocumentValue.Type::Line);
-      PositionFieldDocumentValue.SETRANGE("Is Valid",TRUE);
-      PositionFieldDocumentValue.SETRANGE("Template No.",TemplateNo);
-      IF PositionFieldDocumentValue.ISEMPTY THEN
-        ERROR(Text020);
-
-      // Loop through all document values of the first position and search for normal fields
-      PositionFieldDocumentValue.FINDSET;
-      REPEAT
-        IF PositionField.GET(TemplateNo,PositionField.Type::Line,PositionFieldDocumentValue.Code) THEN
-          PositionFieldFound := PositionField."Advanced Line Recognition Type" = PositionField."Advanced Line Recognition Type"::Default;
-      UNTIL (PositionFieldDocumentValue.NEXT = 0) OR PositionFieldFound;
-
-      IF NOT PositionFieldFound THEN
-        ERROR(Text020);
-      }
     END;
 
     LOCAL PROCEDURE GetSelectedFieldValue@1000000007(VAR SelectedFieldDocumentValue@1000000000 : Record 6085593;SelectedField@1000000001 : Record 6085580;DocumentNo@1000000002 : Code[20];TemplateNo@1000000003 : Code[20]);
@@ -343,6 +321,7 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
       002 20180325 SRA New functions for Caption in Line and Offset Line
                        Renamed of existing functions
       004 20180717 SRA Redesign, new funtionality
+      006 20190219 SRA New Function to reset a selectable field to standard capturing
       -----------------------------------------------------
     }
     END.
