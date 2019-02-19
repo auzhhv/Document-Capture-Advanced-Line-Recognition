@@ -2,8 +2,8 @@ OBJECT Codeunit 60001 Adv. Purch/Sales Line Capture
 {
   OBJECT-PROPERTIES
   {
-    Date=02/13/19;
-    Time=12:00:00 PM;
+    Date=02/19/19;
+    Time=[ 4:30:29 PM];
     Modified=Yes;
     Version List=ALR005;
   }
@@ -87,7 +87,7 @@ OBJECT Codeunit 60001 Adv. Purch/Sales Line Capture
         CurrRight := CurrLeft + OffsetField."Offset Right";
         CaptureMgt.CaptureFromPos(CurrPage,OffsetField,TempDocLine."Line No.",TRUE,CurrTop,CurrLeft,CurrBottom,CurrRight,DocumentValue);
         IF DocumentValue.GET(TempDocLine."Document No.",TRUE,OffsetField.Code,TempDocLine."Line No.") THEN
-          IF (DocumentValue."Value (Text)" = '') AND (DocumentValue."Value (Decimal)" = 0) THEN
+          IF ((DocumentValue."Value (Text)" = '') AND (DocumentValue."Value (Decimal)" = 0)) OR (NOT DocumentValue."Is Valid" )THEN
             DocumentValue.DELETE;
       END;
     END;
