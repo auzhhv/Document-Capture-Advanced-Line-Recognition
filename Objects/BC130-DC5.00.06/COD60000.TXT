@@ -2,10 +2,10 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=02/13/19;
+    Date=02/19/19;
     Time=12:00:00 PM;
     Modified=Yes;
-    Version List=ALR005;
+    Version List=ALR006;
   }
   PROPERTIES
   {
@@ -86,7 +86,9 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
       LinkedField."Offset Right" := LinkedFieldDocumentValue.Right - LinkedFieldDocumentValue.Left;
       LinkedField."Advanced Line Recognition Type" := LinkedField."Advanced Line Recognition Type"::LinkedToAnchorField;
       LinkedField."Anchor Field" := AnchorFieldDocumentValue.Code;
+
       UpdateExecutionSequence(LinkedField,LinkedField."Anchor Field");
+
       IF LinkedField.MODIFY(TRUE) THEN BEGIN
         SetTemplateToALRProcessing(TempDocumentLine."Template No.");
         MESSAGE(Text002,LinkedField."Field Name",AnchorField."Field Name");
@@ -97,13 +99,13 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
 
     PROCEDURE SetToFieldSearchWithColumnHeding@1113400003(VAR TempDocumentLine@1113400002 : Record 6085596);
     VAR
-      PositionFieldDocumentValue@1000000001 : Record 6085593;
+      LineIdentFieldDocumentValue@1000000001 : Record 6085593;
       SelectedField@1113400001 : Record 6085580;
       SelectedFieldDocumentValue@1000000004 : Record 6085593;
       TemplateFieldCaption@1000000000 : Record 6085581;
     BEGIN
       // Find field value of a normal position field
-      GetPositionDocValue(PositionFieldDocumentValue, TempDocumentLine."Document No.", TempDocumentLine."Template No.");
+      GetLineIdentifierValue(LineIdentFieldDocumentValue, TempDocumentLine."Document No.", TempDocumentLine."Template No.");
 
       // Select field
       MESSAGE(Text015);
@@ -125,7 +127,7 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
       // Setup field for column heading search
       SelectedField."Advanced Line Recognition Type" := SelectedField."Advanced Line Recognition Type"::FindFieldByColumnHeading;
 
-      IF SelectedFieldDocumentValue.Top < PositionFieldDocumentValue.Top THEN
+      IF SelectedFieldDocumentValue.Top < LineIdentFieldDocumentValue.Top THEN
         SelectedField."Field Position" := SelectedField."Field Position"::AboveAnchor
       ELSE
         SelectedField."Field Position" := SelectedField."Field Position"::BelowAnchor;
@@ -139,13 +141,13 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
 
     PROCEDURE SetToFieldSearchWithCaption@1113400000(VAR TempDocumentLine@1113400000 : Record 6085596);
     VAR
-      PositionFieldDocumentValue@1000000001 : Record 6085593;
+      LineIdentFieldDocumentValue@1000000001 : Record 6085593;
       SelectedField@1113400001 : Record 6085580;
       SelectedFieldDocumentValue@1000000002 : Record 6085593;
       TemplateFieldCaption@1000000000 : Record 6085581;
     BEGIN
       // Find field value of a normal position field
-      GetPositionDocValue(PositionFieldDocumentValue, TempDocumentLine."Document No.", TempDocumentLine."Template No.");
+      GetLineIdentifierValue(LineIdentFieldDocumentValue, TempDocumentLine."Document No.", TempDocumentLine."Template No.");
 
       // Select field
       MESSAGE(Text016);
@@ -167,7 +169,7 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
       // Setup field for field search by caption
       SelectedField."Advanced Line Recognition Type" := SelectedField."Advanced Line Recognition Type"::FindFieldByCaptionInPosition;
 
-      IF SelectedFieldDocumentValue.Top < PositionFieldDocumentValue.Top THEN
+      IF SelectedFieldDocumentValue.Top < LineIdentFieldDocumentValue.Top THEN
         SelectedField."Field Position" := SelectedField."Field Position"::AboveAnchor
       ELSE
         SelectedField."Field Position" := SelectedField."Field Position"::BelowAnchor;
@@ -179,21 +181,13 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
         MESSAGE(Text014);
     END;
 
-    LOCAL PROCEDURE SelectField@1113400002(VAR TemplateField@1000000000 : Record 6085580;TemplateNo@1113400001 : Code[20];ExcludedFieldsFilter@1113400000 : Text[250]) : Boolean;
+    PROCEDURE ResetFieldFromMenu@1(VAR TempDocumentLine@1001 : Record 6085596);
     VAR
-      lTemplateFieldList@1000000003 : Page 6085602;
+      FieldToReset@1000 : Record 6085580;
     BEGIN
-      WITH TemplateField DO BEGIN
-        SETRANGE("Template No.",TemplateNo);
-        SETRANGE(Type,Type::Line);
-        IF ExcludedFieldsFilter <> '' THEN
-          SETFILTER(Code,'<>%1',ExcludedFieldsFilter);
-        lTemplateFieldList.SETTABLEVIEW(TemplateField);
-        lTemplateFieldList.LOOKUPMODE(TRUE);
-        IF lTemplateFieldList.RUNMODAL = ACTION::LookupOK THEN BEGIN
-          lTemplateFieldList.GETRECORD(TemplateField);
-          EXIT(TRUE);
-        END;
+      IF SelectField(FieldToReset,TempDocumentLine."Template No.",'') THEN BEGIN
+        ResetField(FieldToReset);
+        FieldToReset.MODIFY(TRUE);
       END;
     END;
 
@@ -211,6 +205,26 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
         CLEAR("Offset Right");
         CLEAR("Field Position");
         CLEAR("Line Recognition Sorting");
+        CLEAR("Substitution Field");
+        CLEAR("Get Value from Previous Value");
+      END;
+    END;
+
+    LOCAL PROCEDURE SelectField@1113400002(VAR TemplateField@1000000000 : Record 6085580;TemplateNo@1113400001 : Code[20];ExcludedFieldsFilter@1113400000 : Text[250]) : Boolean;
+    VAR
+      lTemplateFieldList@1000000003 : Page 6085602;
+    BEGIN
+      WITH TemplateField DO BEGIN
+        SETRANGE("Template No.",TemplateNo);
+        SETRANGE(Type,Type::Line);
+        IF ExcludedFieldsFilter <> '' THEN
+          SETFILTER(Code,'<>%1',ExcludedFieldsFilter);
+        lTemplateFieldList.SETTABLEVIEW(TemplateField);
+        lTemplateFieldList.LOOKUPMODE(TRUE);
+        IF lTemplateFieldList.RUNMODAL = ACTION::LookupOK THEN BEGIN
+          lTemplateFieldList.GETRECORD(TemplateField);
+          EXIT(TRUE);
+        END;
       END;
     END;
 
@@ -238,11 +252,29 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
         EXIT(Object.ID);
     END;
 
-    LOCAL PROCEDURE GetPositionDocValue@1000000002(VAR PositionFieldDocumentValue@1000000000 : Record 6085593;DocumentNo@1000000001 : Code[20];TemplateNo@1000000002 : Code[20]);
+    LOCAL PROCEDURE GetLineIdentifierValue@1000000002(VAR LineIdentFieldDocumentValue@1000000000 : Record 6085593;DocumentNo@1000000001 : Code[20];TemplateNo@1000000002 : Code[20]);
     VAR
-      PositionField@1000000003 : Record 6085580;
-      PositionFieldFound@1000000004 : Boolean;
+      LineIdentField@1000000003 : Record 6085580;
+      LineIdentFieldFound@1000000004 : Boolean;
     BEGIN
+      WITH LineIdentField DO BEGIN
+        SETRANGE("Template No.",TemplateNo);
+        SETRANGE(Type,Type::Line);
+        SETRANGE(Required,TRUE);
+        SETRANGE("Advanced Line Recognition Type","Advanced Line Recognition Type"::Default);
+        IF FINDSET THEN
+          REPEAT
+            IF LineIdentFieldDocumentValue.GET(DocumentNo,TRUE,LineIdentField.Code,1) THEN
+              IF (LineIdentFieldDocumentValue."Template No." = TemplateNo) AND
+                 (LineIdentFieldDocumentValue.Type = LineIdentFieldDocumentValue.Type::Line)
+              THEN
+                LineIdentFieldFound := TRUE;
+          UNTIL (NEXT = 0) OR LineIdentFieldFound;
+      END;
+
+      IF NOT LineIdentFieldFound THEN
+        ERROR(Text020);
+      {
       PositionFieldDocumentValue.SETRANGE("Document No.",DocumentNo);
       PositionFieldDocumentValue.SETRANGE("Is Value",TRUE);
       PositionFieldDocumentValue.SETRANGE("Line No.",1);
@@ -261,6 +293,7 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
 
       IF NOT PositionFieldFound THEN
         ERROR(Text020);
+      }
     END;
 
     LOCAL PROCEDURE GetSelectedFieldValue@1000000007(VAR SelectedFieldDocumentValue@1000000000 : Record 6085593;SelectedField@1000000001 : Record 6085580;DocumentNo@1000000002 : Code[20];TemplateNo@1000000003 : Code[20]);
@@ -285,14 +318,14 @@ OBJECT Codeunit 60000 Adv. Line Recognition Mgt.
       IF NOT PrevField.GET(LinkedField."Template No.",PrevField.Type::Line,PreviousFieldCode) THEN
         EXIT;
 
-      IF LinkedField."Line Recognition Sorting" <= PrevField."Line Recognition Sorting" THEN BEGIN
+      IF LinkedField."Line Recognition Sorting" <= PrevField."Line Recognition Sorting"  THEN BEGIN
         SortField.SETRANGE("Template No.",LinkedField."Template No.");
         SortField.SETRANGE(Type,SortField.Type::Line);
         SortField.SETFILTER(Code,'<>%1',LinkedField.Code);
-        SortField.SETFILTER("Line Recognition Sorting", '>=%1',LinkedField."Line Recognition Sorting" + 1);
+        SortField.SETFILTER("Line Recognition Sorting", '>=%1',LinkedField."Line Recognition Sorting"  + 1);
         IF SortField.FINDSET THEN
           REPEAT
-            SortField."Line Recognition Sorting" := SortField."Line Recognition Sorting" + 1;
+            SortField."Line Recognition Sorting" := SortField."Line Recognition Sorting"  + 1;
             SortField.MODIFY;
           UNTIL SortField.NEXT = 0;
         LinkedField."Line Recognition Sorting" := LinkedField."Line Recognition Sorting" + 1;
