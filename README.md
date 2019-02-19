@@ -14,6 +14,13 @@ You can use the CKL Advance Line Recognition on your own risk.
 ## Documentation ##
 At the moment there is no other documentation than this readme file.
 
+## Current Features ##
+1. Find a field value by linking it to a previously found field and automatically calculating the distance and size
+2. Find a field value by searching for a caption in the current position (sames procedure like on header fields - but only processed in the current position range)
+3. Find a field value by the column heading (same procedure/training) like on default line fields. This enables the user to capture values based on the column that are not in the default line of the current position
+4. Define a substitution value. If it was not able to find a value for a field you can define another field, who's value will be set as value for the field with the empty value.
+5. Copy a value from the previous line. If it was not able to find a value for a field the system will use the value of this field from the previous line. 
+
 ## Implementation of the extension ##
 The code will be updated unregularly for new versions of Document Capture.
 
